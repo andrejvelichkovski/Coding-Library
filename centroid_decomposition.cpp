@@ -16,8 +16,6 @@ int tpar[maxn];
  
 int result;
  
-vector<int>curr_nodes;
- 
 void get_sizes(int node, int p) {
 	sbt_sz[node] = 1;
 	tpar[node] = p;
