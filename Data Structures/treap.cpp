@@ -1,3 +1,5 @@
+// Treap implementation based on the SecondThread lecture
+// Tested on problem A from Codeforces Treap Lecture Contest
 #include <bits/stdc++.h>
 #define ll long long
 #define pb push_back
@@ -40,6 +42,7 @@ void recalculate(Treap *curr) {
 Treap::Treap (int data) {
 	this->data = data;
 	child = {NULL, NULL};
+	this->lazy = 0;
 	this->priority = get_random();
 	recalculate(this);
 }
@@ -76,7 +79,6 @@ vector<Treap*> split(Treap *curr, int left_size) {
 		curr->child[0] = leftquery[1];
 
 		recalculate(curr);
-	//	recalculate(leftquery[0]);
 		return {leftquery[0], curr};
 	}
 	else {
@@ -85,7 +87,6 @@ vector<Treap*> split(Treap *curr, int left_size) {
 		curr->child[1] = rightquery[0];
 
 		recalculate(curr);
-	//	recalculate(rightquery[1]);
 		return {curr, rightquery[1]};
 	}
 }
@@ -109,50 +110,20 @@ Treap* merge(Treap *left, Treap *right) {
 	}
 }
 
-Treap *root;
+void iterate(Treap *curr) {
+	if(curr == NULL) return;
 
-ll query(int ql, int qr) {
-	vector<Treap*> a = split(root, ql - 1);
-	vector<Treap*> b = split(a[1], qr - ql + 1);
-
-	//cout<<a[0]->subtreesum<<" "<<a[1]->subtreesum<<"\n";
-
-	ll result = b[0]->subtreesum;
-	root = merge(a[0], merge(b[0], b[1]));
-	return result;
+	iterate(curr->child[0]);
+	cout<<curr->data<<" ";
+	iterate(curr->child[1]);
 }
+
+Treap *root;
 
 int main() {
 	ios_base::sync_with_stdio(false);
 	cin.tie(0);
 
-	/*for(int i=1;i<=10;i++) {
-		cout<<get_random()<<"\n";;
-	}*/
-
-	cin>>n>>q;
-
-	for(int i=1;i<=n;i++) {
-		cin>>arr[i];
-	}
-
-	root = new Treap(arr[1]);
-
-	for(int i=2;i<=n;i++) {
-		Treap *temp = new Treap(arr[i]);
-
-		//cout<<i<<": "<<temp->data<<" ";
-
-		root = merge(root, temp);
-
-		//cout<<root->subtreesum<<"\n";
-	}
-
-		
-	ll a, b;
-	while(q--) {
-		cin>>a>>b;
-		cout<<query(a, b)<<"\n";
-	}
+	root = new Treap(0);
 
 }
