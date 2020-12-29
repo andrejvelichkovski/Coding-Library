@@ -1,67 +1,85 @@
-// Segment tree implementation, tested on GSS3 from SPOJ
+/*
+    Implementation of Segment Tree
+    By default, it finds minimum, maximum value and sum in a range
+*/
 #include <bits/stdc++.h>
-#define ll long long
-#define pb push_back
-#define mp make_pair
-#define sz(x) int(x.size())
 using namespace std;
-const int maxn = 100100;
-const ll inf = 1e12;
-ll n, q, arr[maxn];
+
+class node_values {
+public:
+    int max_value, min_value, sum;
+};
+
+node_values EMPTY;
 
 class node {
+    // Variables for the Segment Tree itself
+    int left_bound, right_bound;
+    node *left_child, *right_child;
+
+    // Variables for the stored values
 public:
-	ll val;
-}tree[4*maxn];
+    node_values current;
 
-node leaf_value(ll val) {
-	return {val};
-}
+    node(int _lb, int _rb) {
+        left_bound = _lb;
+        right_bound = _rb;
 
-node merge_values(node a, node b) {
-	return {a.val + b.val};
-}
+        left_child = right_child = NULL;
+    }
 
-void build(int li=0, int ri=n-1, int index=1) {
-	if(li == ri) {
-		tree[index] = leaf_value(arr[li]);
-	}
-	else {
-		int mid = (li + ri) / 2;
+    void set_leaf_value(int arr_value) {
+        current = {arr_value, arr_value, arr_value};
+    }
 
-		build(li, mid, 2*index);
-		build(mid+1, ri, 2*index+1);
+    node_values merge(node_values left_value, node_values right_value) {
+        node_values curr = {};
 
-		tree[index] = merge_values(tree[2*index], tree[2*index+1]);
-	}
-}
+        curr.min_value = min(left_value.min_value, right_value.min_value);
+        curr.max_value = max(left_value.max_value, right_value.max_value);
 
-void update(int uind, ll uval, int li=0, int ri=n-1, int index=1) {
-	if(li == ri) {
-		tree[index] = leaf_value(uval);
-	}
-	else {
-		int mid = (li + ri) / 2;
+        curr.sum = left_value.sum + right_value.sum;
+    }
 
-		if(uind <= mid) update(uind, uval, li, mid, 2*index);
-		else update(uind, uval, mid+1, ri, 2*index+1);
+    void build(int arr[]) {
+        if(left_bound == right_bound) {
+            set_leaf_value(arr[left_bound]);
+            return;
+        }
 
-		tree[index] = merge_values(tree[2*index], tree[2*index+1]);
-	}
-}
+        int mid = (left_bound + right_bound) / 2;
 
-node empty_node;
-node query(int ql, int qr, int li=0, int ri=n-1, int index=1) {
-	if(li > qr || ri < ql) return empty_node;
-	else if(li >= ql && ri <= qr) return tree[index];
-	else {
-		int mid = (li + ri) / 2;
+        if(left_child == NULL) left_child = new node(left_bound, mid);
+        if(right_child == NULL) right_child = new node(mid+1, right_bound);
 
-		return merge_values(query(ql, qr, li, mid, 2*index), query(ql, qr, mid+1, ri, 2*index+1));
-	}
-}
- 
+        left_child->build(arr);
+        right_child->build(arr);
+    }
+
+    node_values query(int query_left, int query_right) {
+        if(right_bound < query_left || left_bound > query_right) return EMPTY;
+        if(left_bound >= query_left && right_bound <= query_right) return current;
+
+        node_values left = left_child->query(query_left, query_right);
+        node_values right = right_child->query(query_left, query_right);
+
+        return merge(left, right);
+    }
+
+    void update(int position, int new_value) {
+        if(left_bound == right_bound) {
+            set_leaf_value(new_value);
+        }
+        else {
+            int mid = (left_bound + right_bound) / 2;
+            if(position <= mid) left_child->update(position, new_value); 
+            else right_child->update(position, new_value);
+
+            current = merge(left_child->current, right_child->current);
+        }
+    }
+};
 
 int main() {
-	empty_node = {0};
+    EMPTY = {INT_MIN, INT_MAX, 0};
 }
